@@ -7,6 +7,10 @@ import DashboardLayout from "../layouts/dashboard/DashboardLayout"
 
 import Card from "../components/ui/Card"
 
+import DashboardStats from "../components/dashboard/DashboardStats"
+
+import { useAuthStore } from "../store/authStore"
+
 import { getHabits } from "../features/habit/habitApi"
 import { getTasks } from "../features/task/taskApi"
 import { getCheckIns } from "../features/checkin/checkinApi"
@@ -17,8 +21,23 @@ import type { Task } from "../types/task"
 import type { CheckIn } from "../types/checkin"
 
 import { getIdentityLevel } from "../utils/getIdentityLevel"
+import { generateInsight } from "../utils/generateInsight"
+import { generateRecommendations } from "../utils/generateRecommendations"
 
 function DashboardPage() {
+  const { user } =
+    useAuthStore()
+
+  const hour =
+    new Date().getHours()
+
+  const greeting =
+    hour < 12
+      ? "Good Morning"
+      : hour < 18
+      ? "Good Afternoon"
+      : "Good Evening"
+
   const [habits, setHabits] =
     useState<Habit[]>([])
 
@@ -99,14 +118,97 @@ function DashboardPage() {
   const identity =
     getIdentityLevel(lifeScore)
 
+  const completionRate =
+    tasks.length > 0
+      ? Math.round(
+          (completedTasks /
+            tasks.length) *
+            100
+        )
+      : 0
+
+  const topHabit =
+    [...habits].sort(
+      (a, b) =>
+        b.streak - a.streak
+    )[0]
+
+  const aiInsight =
+    generateInsight({
+      lifeScore,
+
+      completedHabits,
+      totalHabits:
+        habits.length,
+
+      completedTasks,
+      totalTasks:
+        tasks.length,
+
+      focusSessions:
+        focusSessions.length,
+
+      moodAverage,
+    })
+
+  const recommendations =
+    generateRecommendations({
+      incompleteTasks:
+        tasks.filter(
+          (task) =>
+            !task.completed
+        ).length,
+
+      completedHabits,
+
+      totalHabits:
+        habits.length,
+
+      focusSessions:
+        focusSessions.length,
+
+      moodAverage,
+
+      lifeScore,
+
+      hasCheckIn:
+        checkIns.length > 0,
+    })
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
+
+        {/* Header */}
+        <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6">
+          <div>
+            <p className="text-zinc-500 uppercase tracking-[0.3em] text-sm">
+              LIFE OPERATING SYSTEM
+            </p>
+
+            <h1 className="text-5xl font-black text-white mt-3">
+              {greeting},{" "}
+              {user?.name}
+            </h1>
+
+            <p className="text-zinc-400 mt-4 text-lg">
+              Your behavioral systems
+              are online.
+            </p>
+          </div>
+
+          <div className="px-6 py-4 rounded-2xl bg-lime-400/10 border border-lime-400/20">
+            <p className="text-lime-400 font-semibold">
+              System Active
+            </p>
+          </div>
+        </div>
+
         {/* Hero */}
         <Card className="min-h-[260px] flex flex-col justify-between">
           <div>
             <p className="uppercase tracking-[0.3em] text-zinc-500 text-sm">
-              LIFE OPERATING SYSTEM
+              LIFE SCORE
             </p>
 
             <h1 className="text-6xl font-black text-lime-400 mt-6">
@@ -130,50 +232,107 @@ function DashboardPage() {
           </div>
         </Card>
 
-        {/* Main Stats */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          <Card>
-            <p className="text-zinc-500 uppercase text-sm">
-              Completed Habits
-            </p>
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          <DashboardStats
+            title="Completed Habits"
+            value={completedHabits}
+            subtitle="Systems executed today"
+          />
 
-            <h2 className="text-5xl font-black text-white mt-5">
-              {completedHabits}
-            </h2>
-          </Card>
+          <DashboardStats
+            title="Completed Tasks"
+            value={completedTasks}
+            subtitle="Mission progress"
+          />
 
-          <Card>
-            <p className="text-zinc-500 uppercase text-sm">
-              Completed Tasks
-            </p>
+          <DashboardStats
+            title="Focus Sessions"
+            value={
+              focusSessions.length
+            }
+            subtitle="Deep work blocks"
+          />
 
-            <h2 className="text-5xl font-black text-white mt-5">
-              {completedTasks}
-            </h2>
-          </Card>
-
-          <Card>
-            <p className="text-zinc-500 uppercase text-sm">
-              Focus Sessions
-            </p>
-
-            <h2 className="text-5xl font-black text-white mt-5">
-              {
-                focusSessions.length
-              }
-            </h2>
-          </Card>
-
-          <Card>
-            <p className="text-zinc-500 uppercase text-sm">
-              Mental State
-            </p>
-
-            <h2 className="text-5xl font-black text-lime-400 mt-5">
-              {moodAverage}/10
-            </h2>
-          </Card>
+          <DashboardStats
+            title="Mental State"
+            value={`${moodAverage}/10`}
+            subtitle="Current cognitive state"
+          />
         </div>
+
+        {/* Daily Status */}
+        <Card>
+          <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6">
+            <div>
+              <p className="text-zinc-500 uppercase tracking-[0.3em] text-sm">
+                DAILY STATUS
+              </p>
+
+              <h2 className="text-4xl font-black text-white mt-4">
+                {completionRate >= 80
+                  ? "Locked In"
+                  : completionRate >= 50
+                  ? "Building Momentum"
+                  : "Needs Recovery"}
+              </h2>
+
+              <p className="text-zinc-400 mt-4 leading-relaxed max-w-2xl">
+                Your behavioral systems
+                are actively shaping
+                your future identity.
+                Consistency compounds
+                faster than intensity.
+              </p>
+            </div>
+
+            <div className="w-28 h-28 rounded-3xl bg-lime-400/10 border border-lime-400/20 flex items-center justify-center">
+              <span className="text-4xl font-black text-lime-400">
+                {completionRate}%
+              </span>
+            </div>
+          </div>
+        </Card>
+
+        {/* Top Habit */}
+        <Card>
+          <p className="text-zinc-500 uppercase tracking-[0.3em] text-sm">
+            TOP SYSTEM
+          </p>
+
+          {topHabit ? (
+            <div className="mt-5">
+              <h2 className="text-4xl font-black text-white">
+                {topHabit.title}
+              </h2>
+
+              <p className="text-zinc-400 mt-4">
+                {topHabit.description}
+              </p>
+
+              <div className="mt-6 flex items-center gap-4">
+                <div className="px-5 py-3 rounded-2xl bg-lime-400/10 border border-lime-400/20">
+                  <span className="text-lime-400 font-bold">
+                    {topHabit.streak}
+                    {" "}Day Streak
+                  </span>
+                </div>
+
+                {topHabit.completedToday && (
+                  <div className="px-5 py-3 rounded-2xl bg-zinc-900 border border-zinc-800">
+                    <span className="text-white font-semibold">
+                      Completed Today
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="text-zinc-500 mt-5">
+              No habits created yet.
+            </p>
+          )}
+        </Card>
 
         {/* Insight */}
         <Card>
@@ -182,62 +341,110 @@ function DashboardPage() {
           </p>
 
           <h2 className="text-3xl font-black text-white mt-5">
-            {lifeScore < 20
-              ? "Your operating system is unstable."
-              : lifeScore < 60
-              ? "Execution consistency is forming."
-              : lifeScore < 120
-              ? "You are entering high-performance patterns."
-              : "You are operating at an elite execution level."}
+            {aiInsight}
           </h2>
 
           <p className="text-zinc-400 mt-5 leading-relaxed">
-            LifeOS continuously analyzes
-            your behavior, execution
-            quality, focus intensity,
-            emotional consistency, and
-            productivity systems to
-            measure your real operating
-            state.
+            LifeOS continuously
+            analyzes your behavior,
+            execution quality,
+            focus intensity,
+            emotional consistency,
+            and productivity systems.
           </p>
         </Card>
 
-        {/* Quick Analytics */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <Card>
-            <p className="text-zinc-500 uppercase text-sm">
-              Habit Completion Rate
+        {/* Recommendations */}
+        <Card>
+          <div className="mb-8">
+            <p className="text-zinc-500 uppercase tracking-[0.3em] text-sm">
+              SYSTEM RECOMMENDATIONS
             </p>
 
-            <h2 className="text-6xl font-black text-white mt-6">
-              {habits.length === 0
-                ? 0
-                : Math.round(
-                    (completedHabits /
-                      habits.length) *
-                      100
-                  )}
-              %
+            <h2 className="text-3xl font-black text-white mt-4">
+              Suggested Actions
             </h2>
-          </Card>
+          </div>
 
-          <Card>
-            <p className="text-zinc-500 uppercase text-sm">
-              Task Completion Rate
-            </p>
+          <div className="space-y-4">
+            {recommendations.map(
+              (
+                recommendation,
+                index
+              ) => (
+                <div
+                  key={index}
+                  className="
+                    rounded-2xl
+                    border
+                    border-zinc-800
+                    bg-zinc-950
+                    p-5
+                    flex
+                    items-start
+                    gap-4
+                  "
+                >
+                  <div className="text-2xl">
+                    ⚡
+                  </div>
 
-            <h2 className="text-6xl font-black text-white mt-6">
-              {tasks.length === 0
-                ? 0
-                : Math.round(
-                    (completedTasks /
-                      tasks.length) *
-                      100
-                  )}
-              %
-            </h2>
-          </Card>
-        </div>
+                  <p className="text-zinc-300 leading-relaxed">
+                    {recommendation}
+                  </p>
+                </div>
+              )
+            )}
+          </div>
+        </Card>
+
+        {/* Active Systems */}
+        <Card>
+          <p className="text-zinc-500 uppercase tracking-[0.3em] text-sm">
+            ACTIVE SYSTEMS
+          </p>
+
+          <div className="mt-5 space-y-4">
+            {habits.length === 0 ? (
+              <p className="text-zinc-500">
+                No active systems yet.
+              </p>
+            ) : (
+              habits
+                .slice(0, 4)
+                .map((habit) => (
+                  <div
+                    key={habit._id}
+                    className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900/50 px-5 py-4"
+                  >
+                    <div>
+                      <h3 className="text-white font-semibold">
+                        {habit.title}
+                      </h3>
+
+                      <p className="text-zinc-500 text-sm mt-1">
+                        {habit.streak}
+                        {" "}day streak
+                      </p>
+                    </div>
+
+                    <div
+                      className={`
+                        w-4
+                        h-4
+                        rounded-full
+                        ${
+                          habit.completedToday
+                            ? "bg-lime-400"
+                            : "bg-zinc-700"
+                        }
+                      `}
+                    />
+                  </div>
+                ))
+            )}
+          </div>
+        </Card>
       </div>
     </DashboardLayout>
   )

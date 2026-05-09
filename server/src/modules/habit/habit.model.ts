@@ -31,6 +31,11 @@ const habitSchema = new mongoose.Schema(
     lastCompletedDate: {
   type: Date,
 },
+completionDates: [
+  {
+    type: Date,
+  },
+],
 
   },
   {

@@ -5,7 +5,7 @@ import helmet from "helmet"
 import morgan from "morgan"
 
 import routes from "./routes"
-
+import journalRoutes from "./modules/journal/journal.routes"
 const app = express()
 
 app.use(express.json())
@@ -24,5 +24,6 @@ app.get("/", (_, res) => {
 })
 
 app.use("/api", routes)
+app.use("/api/journals", journalRoutes)
 
 export default app

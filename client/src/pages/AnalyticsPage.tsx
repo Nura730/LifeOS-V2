@@ -4,6 +4,8 @@ import DashboardLayout from "../layouts/dashboard/DashboardLayout"
 
 import Card from "../components/ui/Card"
 
+import Skeleton from "../components/ui/Skeleton"
+
 import { getHabits } from "../features/habit/habitApi"
 import { getTasks } from "../features/task/taskApi"
 
@@ -11,6 +13,10 @@ import type { Habit } from "../types/habit"
 import type { Task } from "../types/task"
 
 import { getIdentityLevel } from "../utils/getIdentityLevel"
+
+import PerformanceChart from "../components/charts/PerformanceChart"
+import PageWrapper from "../components/animations/PageWrapper"
+import Heatmap from "../components/analytics/Heatmap"
 
 function AnalyticsPage() {
   const [habits, setHabits] = useState<
@@ -21,8 +27,13 @@ function AnalyticsPage() {
     Task[]
   >([])
 
+  const [loading, setLoading] =
+    useState(true)
+
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true)
+
       try {
         const habitsData =
           await getHabits()
@@ -34,6 +45,8 @@ function AnalyticsPage() {
         setTasks(tasksData)
       } catch (error) {
         console.log(error)
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -62,8 +75,92 @@ function AnalyticsPage() {
   const identity =
     getIdentityLevel(lifeScore)
 
+  const weeklyPerformance = [
+    {
+      day: "Mon",
+      score: Math.max(
+        10,
+        lifeScore - 60
+      ),
+    },
+    {
+      day: "Tue",
+      score: Math.max(
+        20,
+        lifeScore - 40
+      ),
+    },
+    {
+      day: "Wed",
+      score: Math.max(
+        30,
+        lifeScore - 20
+      ),
+    },
+    {
+      day: "Thu",
+      score: Math.max(
+        40,
+        lifeScore - 10
+      ),
+    },
+    {
+      day: "Fri",
+      score: Math.max(
+        50,
+        lifeScore
+      ),
+    },
+    {
+      day: "Sat",
+      score: Math.max(
+        60,
+        lifeScore + 10
+      ),
+    },
+    {
+      day: "Sun",
+      score: Math.max(
+        70,
+        lifeScore + 20
+      ),
+    },
+  ]
+if (loading) {
   return (
     <DashboardLayout>
+      <PageWrapper>
+        <div className="space-y-8">
+          <Skeleton className="h-[220px] w-full" />
+
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+            <Skeleton className="h-[140px]" />
+            <Skeleton className="h-[140px]" />
+            <Skeleton className="h-[140px]" />
+            <Skeleton className="h-[140px]" />
+          </div>
+
+          <Skeleton className="h-[400px] w-full" />
+        </div>
+      </PageWrapper>
+    </DashboardLayout>
+  )
+}
+
+const weeklyHeatmap = [
+  completedHabits,
+  completedTasks,
+  Math.floor(lifeScore / 20),
+  completedHabits + 1,
+  completedTasks + 2,
+  Math.floor(lifeScore / 15),
+  Math.floor(lifeScore / 10),
+]
+
+
+  return (
+  <DashboardLayout>
+    <PageWrapper>
       <div className="space-y-8">
         {/* Header */}
         <div>
@@ -164,6 +261,51 @@ function AnalyticsPage() {
           </Card>
         </div>
 
+        {/* Performance Chart */}
+        <Card>
+          <div className="mb-8">
+            <p className="text-zinc-500 uppercase tracking-[0.3em] text-sm">
+              WEEKLY PERFORMANCE
+            </p>
+
+            <h2 className="text-3xl font-black text-white mt-4">
+              Execution Trend
+            </h2>
+
+            <p className="text-zinc-400 mt-3">
+              Behavioral momentum across the week.
+            </p>
+          </div>
+
+          <div className="rounded-3xl bg-zinc-950 p-4 border border-zinc-800">
+            <PerformanceChart
+              data={weeklyPerformance}
+            />
+          </div>
+        </Card>
+
+
+        {/*HeatMap*/}
+        <Card>
+  <div className="mb-8">
+    <p className="text-zinc-500 uppercase tracking-[0.3em] text-sm">
+      EXECUTION HEATMAP
+    </p>
+
+    <h2 className="text-3xl font-black text-white mt-4">
+      Weekly Consistency
+    </h2>
+
+    <p className="text-zinc-400 mt-3">
+      Your execution intensity across the week.
+    </p>
+  </div>
+
+  <Heatmap
+    data={weeklyHeatmap}
+  />
+</Card>
+
         {/* AI Insight */}
         <Card>
           <p className="text-zinc-500 uppercase tracking-[0.3em] text-sm">
@@ -189,8 +331,9 @@ function AnalyticsPage() {
           </p>
         </Card>
       </div>
-    </DashboardLayout>
-  )
+    </PageWrapper>
+  </DashboardLayout>
+)
 }
 
 export default AnalyticsPage

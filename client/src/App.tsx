@@ -10,6 +10,10 @@ import AnalyticsPage from "./pages/AnalyticsPage"
 import CheckInPage from "./pages/CheckInPage"
 import TimelinePage from "./pages/TimelinePage"
 import FocusPage from "./pages/FocusPage"
+import OnboardingPage from "./pages/OnboardingPage"
+import SettingsPage from "./pages/SettingsPage"
+import ProfilePage from "./pages/ProfilePage"
+import JournalPage from "./pages/JournalPage"
 
 function App() {
   return (
@@ -61,7 +65,26 @@ function App() {
   path="/focus"
   element={<FocusPage />}
 />
-
+<Route
+  path="/onboarding"
+  element={<OnboardingPage />}
+/>
+<Route
+  path="/settings"
+  element={<SettingsPage />}
+/>
+<Route
+  path="/profile"
+  element={<ProfilePage />}
+/>
+<Route
+  path="/journal"
+  element={
+    <ProtectedRoute>
+      <JournalPage />
+    </ProtectedRoute>
+  }
+/>
     </Routes>
   )
 }

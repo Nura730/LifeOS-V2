@@ -14,13 +14,18 @@ import type { Habit } from "../types/habit"
 
 import { getIdentityLevel } from "../utils/getIdentityLevel"
 
+import StreakCalendar from "../components/habits/StreakCalendar"
+
 function HabitsPage() {
   const [habits, setHabits] = useState<
     Habit[]
   >([])
 
-  const [title, setTitle] = useState("")
-  const [description, setDescription] =
+  const [title, setTitle] =
+    useState("")
+
+  const [description,
+    setDescription] =
     useState("")
 
   const lifeScore = habits.reduce(
@@ -34,7 +39,8 @@ function HabitsPage() {
 
   const fetchHabits = async () => {
     try {
-      const data = await getHabits()
+      const data =
+        await getHabits()
 
       setHabits(data)
     } catch (error) {
@@ -46,39 +52,44 @@ function HabitsPage() {
     fetchHabits()
   }, [])
 
-  const handleCreateHabit = async (
-    e: React.FormEvent
-  ) => {
-    e.preventDefault()
+  const handleCreateHabit =
+    async (
+      e: React.FormEvent
+    ) => {
+      e.preventDefault()
 
-    if (!title.trim()) return
+      if (!title.trim())
+        return
 
-    try {
-      await createHabit(
-        title,
-        description
-      )
+      try {
+        await createHabit(
+          title,
+          description
+        )
 
-      setTitle("")
-      setDescription("")
+        setTitle("")
+        setDescription("")
 
-      fetchHabits()
-    } catch (error) {
-      console.log(error)
+        await fetchHabits()
+      } catch (error) {
+        console.log(error)
+      }
     }
-  }
 
-  const handleCompleteHabit = async (
-    habitId: string
-  ) => {
-    try {
-      await completeHabit(habitId)
+  const handleCompleteHabit =
+    async (
+      habitId: string
+    ) => {
+      try {
+        await completeHabit(
+          habitId
+        )
 
-      fetchHabits()
-    } catch (error) {
-      console.log(error)
+        await fetchHabits()
+      } catch (error) {
+        console.log(error)
+      }
     }
-  }
 
   return (
     <DashboardLayout>
@@ -122,7 +133,9 @@ function HabitsPage() {
         {/* Create Habit */}
         <Card>
           <form
-            onSubmit={handleCreateHabit}
+            onSubmit={
+              handleCreateHabit
+            }
             className="space-y-5"
           >
             <div>
@@ -135,7 +148,9 @@ function HabitsPage() {
                 placeholder="Read 10 pages..."
                 value={title}
                 onChange={(e) =>
-                  setTitle(e.target.value)
+                  setTitle(
+                    e.target.value
+                  )
                 }
                 className="
                   mt-2
@@ -222,6 +237,14 @@ function HabitsPage() {
                   </span>
                 </div>
               </div>
+
+              {/* Streak Calendar */}
+              <StreakCalendar
+                dates={
+                  habit.completionDates ||
+                  []
+                }
+              />
 
               <div className="mt-6 flex items-center justify-between">
                 <div>

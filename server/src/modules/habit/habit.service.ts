@@ -82,6 +82,9 @@ export const completeHabitService = async (
   habit.completedToday = true
   habit.lastCompletedDate = today
   habit.streak += 1
+  habit.completionDates.push(
+  new Date()
+)
 
   await habit.save()
 

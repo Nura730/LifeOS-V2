@@ -4,6 +4,8 @@ import DashboardLayout from "../layouts/dashboard/DashboardLayout"
 
 import Card from "../components/ui/Card"
 
+import EmptyState from "../components/ui/EmptyState"
+
 import {
   createTask,
   getTasks,
@@ -12,13 +14,18 @@ import {
 
 import type { Task } from "../types/task"
 
+import toast from "react-hot-toast"
+
 function TasksPage() {
   const [tasks, setTasks] = useState<
     Task[]
   >([])
 
-  const [title, setTitle] = useState("")
-  const [description, setDescription] =
+  const [title, setTitle] =
+    useState("")
+
+  const [description,
+    setDescription] =
     useState("")
 
   const [priority, setPriority] =
@@ -26,11 +33,14 @@ function TasksPage() {
 
   const fetchTasks = async () => {
     try {
-      const data = await getTasks()
+      const data =
+        await getTasks()
 
       setTasks(data)
     } catch (error) {
-      console.log(error)
+      toast.error(
+        "Failed to load tasks."
+      )
     }
   }
 
@@ -38,41 +48,58 @@ function TasksPage() {
     fetchTasks()
   }, [])
 
-  const handleCreateTask = async (
-    e: React.FormEvent
-  ) => {
-    e.preventDefault()
+  const handleCreateTask =
+    async (
+      e: React.FormEvent
+    ) => {
+      e.preventDefault()
 
-    if (!title.trim()) return
+      if (!title.trim())
+        return
 
-    try {
-      await createTask(
-        title,
-        description,
-        priority
-      )
+      try {
+        await createTask(
+          title,
+          description,
+          priority
+        )
 
-      setTitle("")
-      setDescription("")
-      setPriority("medium")
+        toast.success(
+          "Task created successfully."
+        )
 
-      fetchTasks()
-    } catch (error) {
-      console.log(error)
+        setTitle("")
+        setDescription("")
+        setPriority("medium")
+
+        await fetchTasks()
+      } catch (error) {
+        toast.error(
+          "Something went wrong."
+        )
+      }
     }
-  }
 
-  const handleCompleteTask = async (
-    taskId: string
-  ) => {
-    try {
-      await completeTask(taskId)
+  const handleCompleteTask =
+    async (
+      taskId: string
+    ) => {
+      try {
+        await completeTask(
+          taskId
+        )
 
-      fetchTasks()
-    } catch (error) {
-      console.log(error)
+        toast.success(
+          "Task completed."
+        )
+
+        await fetchTasks()
+      } catch (error) {
+        toast.error(
+          "Something went wrong."
+        )
+      }
     }
-  }
 
   return (
     <DashboardLayout>
@@ -91,7 +118,9 @@ function TasksPage() {
         {/* Create Task */}
         <Card>
           <form
-            onSubmit={handleCreateTask}
+            onSubmit={
+              handleCreateTask
+            }
             className="space-y-5"
           >
             <input
@@ -99,7 +128,9 @@ function TasksPage() {
               placeholder="Task title..."
               value={title}
               onChange={(e) =>
-                setTitle(e.target.value)
+                setTitle(
+                  e.target.value
+                )
               }
               className="
                 w-full
@@ -185,71 +216,82 @@ function TasksPage() {
         </Card>
 
         {/* Task List */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          {tasks.map((task) => (
-            <Card key={task._id}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-white">
-                    {task.title}
-                  </h2>
+        {tasks.length === 0 ? (
+          <EmptyState
+            title="No tasks yet"
+            description="Start creating execution systems and build momentum through action."
+          />
+        ) : (
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            {tasks.map((task) => (
+              <Card key={task._id}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">
+                      {task.title}
+                    </h2>
 
-                  <p className="text-zinc-400 mt-3">
-                    {task.description}
-                  </p>
+                    <p className="text-zinc-400 mt-3">
+                      {
+                        task.description
+                      }
+                    </p>
+                  </div>
+
+                  <div
+                    className={`
+                      px-4
+                      py-2
+                      rounded-full
+                      text-sm
+                      font-semibold
+                      ${
+                        task.priority ===
+                        "high"
+                          ? "bg-red-500/20 text-red-300"
+                          : task.priority ===
+                            "medium"
+                          ? "bg-yellow-500/20 text-yellow-300"
+                          : "bg-blue-500/20 text-blue-300"
+                      }
+                    `}
+                  >
+                    {task.priority}
+                  </div>
                 </div>
 
-                <div
-                  className={`
-                    px-4
-                    py-2
-                    rounded-full
-                    text-sm
-                    font-semibold
-                    ${
-                      task.priority ===
-                      "high"
-                        ? "bg-red-500/20 text-red-300"
-                        : task.priority ===
-                          "medium"
-                        ? "bg-yellow-500/20 text-yellow-300"
-                        : "bg-blue-500/20 text-blue-300"
+                <div className="mt-6">
+                  <button
+                    onClick={() =>
+                      handleCompleteTask(
+                        task._id
+                      )
                     }
-                  `}
-                >
-                  {task.priority}
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <button
-                  onClick={() =>
-                    handleCompleteTask(
-                      task._id
-                    )
-                  }
-                  disabled={task.completed}
-                  className={`
-                    px-5
-                    py-3
-                    rounded-2xl
-                    font-semibold
-                    transition-all
-                    ${
+                    disabled={
                       task.completed
-                        ? "bg-lime-400 text-black"
-                        : "bg-zinc-800 text-white hover:bg-lime-400 hover:text-black"
                     }
-                  `}
-                >
-                  {task.completed
-                    ? "Completed"
-                    : "Complete Task"}
-                </button>
-              </div>
-            </Card>
-          ))}
-        </div>
+                    className={`
+                      px-5
+                      py-3
+                      rounded-2xl
+                      font-semibold
+                      transition-all
+                      ${
+                        task.completed
+                          ? "bg-lime-400 text-black"
+                          : "bg-zinc-800 text-white hover:bg-lime-400 hover:text-black"
+                      }
+                    `}
+                  >
+                    {task.completed
+                      ? "Completed"
+                      : "Complete Task"}
+                  </button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </DashboardLayout>
   )
