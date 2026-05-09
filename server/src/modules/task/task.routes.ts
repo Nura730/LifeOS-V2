@@ -3,30 +3,29 @@ import express from "express"
 import authMiddleware from "../../middlewares/auth.middleware"
 
 import {
-  createHabitController,
-  getHabitsController,
-} from "./habit.controller"
-import { completeHabitController } from "./habit.controller"    
+  createTaskController,
+  getTasksController,
+  completeTaskController,
+} from "./task.controller"
 
 const router = express.Router()
 
 router.post(
   "/",
   authMiddleware,
-  createHabitController
+  createTaskController
 )
 
 router.get(
   "/",
   authMiddleware,
-  getHabitsController
+  getTasksController
 )
 
 router.patch(
   "/:id/complete",
   authMiddleware,
-  completeHabitController
+  completeTaskController
 )
-
 
 export default router

@@ -5,4 +5,5 @@ export interface Habit {
   streak: number
   completedToday: boolean
   createdAt: string
+  updatedAt: string
 }

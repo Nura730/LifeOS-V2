@@ -17,14 +17,38 @@ export const createHabit = async (
 export const getHabits = async (
   userId: string
 ) => {
-  return Habit.find({
+  const habits = await Habit.find({
     user: userId,
   }).sort({
     createdAt: -1,
   })
+
+  const today = new Date()
+
+  for (const habit of habits) {
+    if (habit.lastCompletedDate) {
+      const lastCompleted = new Date(
+        habit.lastCompletedDate
+      )
+
+      const isSameDay =
+        lastCompleted.toDateString() ===
+        today.toDateString()
+
+      if (!isSameDay) {
+        habit.completedToday = false
+        await habit.save()
+      }
+    }
+  }
+
+  return habits
 }
 
-export const completeHabit = async (
+
+
+
+export const completeHabitService = async (
   habitId: string,
   userId: string
 ) => {
@@ -37,12 +61,29 @@ export const completeHabit = async (
     throw new Error("Habit not found")
   }
 
-  if (!habit.completedToday) {
-    habit.completedToday = true
-    habit.streak += 1
+  const today = new Date()
 
-    await habit.save()
+  const lastCompleted =
+    habit.lastCompletedDate
+      ? new Date(habit.lastCompletedDate)
+      : null
+
+  const isSameDay =
+    lastCompleted &&
+    lastCompleted.toDateString() ===
+      today.toDateString()
+
+  if (isSameDay) {
+    throw new Error(
+      "Habit already completed today"
+    )
   }
+
+  habit.completedToday = true
+  habit.lastCompletedDate = today
+  habit.streak += 1
+
+  await habit.save()
 
   return habit
 }

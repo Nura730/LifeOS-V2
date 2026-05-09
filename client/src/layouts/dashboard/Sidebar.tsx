@@ -17,6 +17,18 @@ const navItems = [
     name: "Analytics",
     path: "/analytics",
   },
+  {
+  name: "Check-Ins",
+  path: "/checkins",
+},
+{
+  name: "Timeline",
+  path: "/timeline",
+},
+{
+  name: "Focus",
+  path: "/focus",
+},
 ]
 
 function Sidebar() {

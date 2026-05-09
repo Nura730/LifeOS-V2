@@ -5,10 +5,12 @@ import { AuthRequest } from "../../middlewares/auth.middleware"
 import {
   createHabit,
   getHabits,
+  completeHabitService,
 } from "./habit.service"
 
 import { createHabitSchema } from "./habit.validation"
-import { completeHabit } from "./habit.service"
+
+
 
 export const createHabitController = async (
   req: AuthRequest,
@@ -63,7 +65,7 @@ export const completeHabitController =
     res: Response
   ) => {
     try {
-      const habit = await completeHabit(
+      const habit = await completeHabitService(
         req.params.id,
         req.user.id
       )
@@ -79,3 +81,4 @@ export const completeHabitController =
       })
     }
   }
+

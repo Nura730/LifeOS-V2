@@ -12,6 +12,8 @@ import {
 
 import type { Habit } from "../types/habit"
 
+import { getIdentityLevel } from "../utils/getIdentityLevel"
+
 function HabitsPage() {
   const [habits, setHabits] = useState<
     Habit[]
@@ -20,6 +22,15 @@ function HabitsPage() {
   const [title, setTitle] = useState("")
   const [description, setDescription] =
     useState("")
+
+  const lifeScore = habits.reduce(
+    (total, habit) =>
+      total + habit.streak,
+    0
+  )
+
+  const identity =
+    getIdentityLevel(lifeScore)
 
   const fetchHabits = async () => {
     try {
@@ -58,16 +69,16 @@ function HabitsPage() {
   }
 
   const handleCompleteHabit = async (
-  habitId: string
-) => {
-  try {
-    await completeHabit(habitId)
+    habitId: string
+  ) => {
+    try {
+      await completeHabit(habitId)
 
-    fetchHabits()
-  } catch (error) {
-    console.log(error)
+      fetchHabits()
+    } catch (error) {
+      console.log(error)
+    }
   }
-}
 
   return (
     <DashboardLayout>
@@ -82,6 +93,31 @@ function HabitsPage() {
             Daily Systems
           </h1>
         </div>
+
+        {/* Identity Card */}
+        <Card>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-zinc-500 uppercase tracking-[0.3em] text-sm">
+                CURRENT IDENTITY
+              </p>
+
+              <h2 className="text-4xl font-black text-lime-400 mt-3">
+                {identity}
+              </h2>
+
+              <p className="text-zinc-400 mt-3">
+                Life Score: {lifeScore}
+              </p>
+            </div>
+
+            <div className="w-24 h-24 rounded-3xl bg-lime-400/10 border border-lime-400/20 flex items-center justify-center">
+              <span className="text-4xl font-black text-lime-300">
+                {lifeScore}
+              </span>
+            </div>
+          </div>
+        </Card>
 
         {/* Create Habit */}
         <Card>
@@ -199,27 +235,31 @@ function HabitsPage() {
                 </div>
 
                 <button
-  onClick={() =>
-    handleCompleteHabit(habit._id)
-  }
-  disabled={habit.completedToday}
-  className={`
-    px-5
-    py-3
-    rounded-2xl
-    transition-all
-    font-semibold
-    ${
-      habit.completedToday
-        ? "bg-lime-400 text-black"
-        : "bg-zinc-800 text-white hover:bg-lime-400 hover:text-black"
-    }
-  `}
->
-  {habit.completedToday
-    ? "Completed"
-    : "Complete"}
-</button>
+                  onClick={() =>
+                    handleCompleteHabit(
+                      habit._id
+                    )
+                  }
+                  disabled={
+                    habit.completedToday
+                  }
+                  className={`
+                    px-5
+                    py-3
+                    rounded-2xl
+                    transition-all
+                    font-semibold
+                    ${
+                      habit.completedToday
+                        ? "bg-lime-400 text-black"
+                        : "bg-zinc-800 text-white hover:bg-lime-400 hover:text-black"
+                    }
+                  `}
+                >
+                  {habit.completedToday
+                    ? "Completed"
+                    : "Complete"}
+                </button>
               </div>
             </Card>
           ))}

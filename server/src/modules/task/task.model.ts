@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 
-const habitSchema = new mongoose.Schema(
+const taskSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -15,32 +15,31 @@ const habitSchema = new mongoose.Schema(
 
     description: {
       type: String,
-      default: "",
     },
 
-    streak: {
-      type: Number,
-      default: 0,
+    priority: {
+      type: String,
+      enum: [
+        "low",
+        "medium",
+        "high",
+      ],
+      default: "medium",
     },
 
-    completedToday: {
+    completed: {
       type: Boolean,
       default: false,
     },
-    
-    lastCompletedDate: {
-  type: Date,
-},
-
   },
   {
     timestamps: true,
   }
 )
 
-const Habit = mongoose.model(
-  "Habit",
-  habitSchema
+const Task = mongoose.model(
+  "Task",
+  taskSchema
 )
 
-export default Habit
+export default Task

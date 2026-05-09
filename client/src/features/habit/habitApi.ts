@@ -43,3 +43,4 @@ export const completeHabit = async (
 
   return response.data
 }
+
