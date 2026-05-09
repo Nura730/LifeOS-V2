@@ -1,149 +1,156 @@
-import { useEffect, useState } from "react"
+import {
+  useEffect,
+  useState,
+} from "react"
 
 import DashboardLayout from "../layouts/dashboard/DashboardLayout"
 
-import Card from "../components/ui/Card"
+import TimelineCard from "../components/timeline/TimelineCard"
 
 import { getHabits } from "../features/habit/habitApi"
 import { getTasks } from "../features/task/taskApi"
-import { getCheckIns } from "../features/checkin/checkinApi"
+import { getJournals } from "../features/journal/journalApi"
+
+import type { TimelineItem } from "../types/timeline"
 
 function TimelinePage() {
-  const [activities, setActivities] =
-    useState<any[]>([])
+  const [timeline,
+    setTimeline] =
+    useState<TimelineItem[]>([])
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const habits =
-          await getHabits()
+    const fetchTimeline =
+      async () => {
+        try {
+          const habits =
+            await getHabits()
 
-        const tasks =
-          await getTasks()
+          const tasks =
+            await getTasks()
 
-        const checkIns =
-          await getCheckIns()
+          const journals =
+            await getJournals()
 
-        const mappedHabits =
-          habits.map((habit) => ({
-            type: "habit",
-            title: `Completed habit "${habit.title}"`,
-            date:
-              habit.updatedAt ||
-              habit.createdAt,
-          }))
+          const habitItems =
+            habits.map(
+              (habit) => ({
+                type:
+                  "habit" as const,
 
-        const mappedTasks =
-          tasks.map((task) => ({
-            type: "task",
-            title: `Task "${task.title}" ${
-              task.completed
-                ? "completed"
-                : "created"
-            }`,
-            date:
-              task.updatedAt ||
-              task.createdAt,
-          }))
+                title:
+                  habit.title,
 
-        const mappedCheckIns =
-          checkIns.map((checkIn) => ({
-            type: "checkin",
-            title:
-              "Daily check-in submitted",
-            date:
-              checkIn.createdAt,
-          }))
+                description:
+                  habit.description,
 
-        const merged = [
-          ...mappedHabits,
-          ...mappedTasks,
-          ...mappedCheckIns,
-        ]
+                createdAt:
+                  habit.createdAt,
+              })
+            )
 
-        merged.sort(
-          (a, b) =>
-            new Date(
-              b.date
-            ).getTime() -
-            new Date(
-              a.date
-            ).getTime()
-        )
+          const taskItems =
+            tasks.map(
+              (task) => ({
+                type:
+                  "task" as const,
 
-        setActivities(merged)
-      } catch (error) {
-        console.log(error)
+                title:
+                  task.title,
+
+                description:
+                  task.description,
+
+                createdAt:
+                  task.createdAt,
+              })
+            )
+
+          const journalItems =
+            journals.map(
+              (journal) => ({
+                type:
+                  "journal" as const,
+
+                title:
+                  journal.title,
+
+                description:
+                  journal.content,
+
+                mood:
+                  journal.mood,
+
+                createdAt:
+                  journal.createdAt,
+              })
+            )
+
+          const merged =
+            [
+              ...habitItems,
+              ...taskItems,
+              ...journalItems,
+            ].sort(
+              (a, b) =>
+                new Date(
+                  b.createdAt
+                ).getTime() -
+                new Date(
+                  a.createdAt
+                ).getTime()
+            )
+
+          setTimeline(
+            merged
+          )
+        } catch (error) {
+          console.log(error)
+        }
       }
-    }
 
-    fetchData()
+    fetchTimeline()
   }, [])
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
+
         {/* Header */}
         <div>
           <p className="text-zinc-500 uppercase tracking-[0.3em] text-sm">
-            ACTIVITY TIMELINE
+            LIFE TIMELINE
           </p>
 
           <h1 className="text-5xl font-black text-white mt-3">
-            Behavioral History
+            Behavioral Replay
           </h1>
+
+          <p className="text-zinc-400 mt-4 text-lg">
+            Your execution history,
+            emotional states,
+            and behavioral evolution.
+          </p>
         </div>
 
         {/* Timeline */}
-        <div className="space-y-5">
-          {activities.map(
-            (activity, index) => (
-              <Card key={index}>
-                <div className="flex items-start gap-5">
-                  {/* Icon */}
-                  <div
-                    className={`
-                    w-14
-                    h-14
-                    rounded-2xl
-                    flex
-                    items-center
-                    justify-center
-                    text-2xl
-                    ${
-                      activity.type ===
-                      "habit"
-                        ? "bg-lime-400/10"
-                        : activity.type ===
-                          "task"
-                        ? "bg-blue-500/10"
-                        : "bg-purple-500/10"
-                    }
-                  `}
-                  >
-                    {activity.type ===
-                    "habit"
-                      ? "🔥"
-                      : activity.type ===
-                        "task"
-                      ? "✔"
-                      : "🧠"}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1">
-                    <h2 className="text-xl font-bold text-white">
-                      {activity.title}
-                    </h2>
-
-                    <p className="text-zinc-500 mt-2">
-                      {new Date(
-                        activity.date
-                      ).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </Card>
+        <div className="space-y-8">
+          {timeline.length === 0 ? (
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-900/50 p-10 text-center">
+              <p className="text-zinc-500 text-lg">
+                No timeline activity yet.
+              </p>
+            </div>
+          ) : (
+            timeline.map(
+              (
+                item,
+                index
+              ) => (
+                <TimelineCard
+                  key={index}
+                  item={item}
+                />
+              )
             )
           )}
         </div>

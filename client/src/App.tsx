@@ -14,10 +14,14 @@ import OnboardingPage from "./pages/OnboardingPage"
 import SettingsPage from "./pages/SettingsPage"
 import ProfilePage from "./pages/ProfilePage"
 import JournalPage from "./pages/JournalPage"
-
+import LandingPage from "./pages/LandingPage"
 function App() {
   return (
     <Routes>
+      <Route
+  path="/"
+  element={<LandingPage />}
+/>
       <Route
         path="/register"
         element={<RegisterPage />}
