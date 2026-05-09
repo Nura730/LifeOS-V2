@@ -4,6 +4,7 @@ import RegisterPage from "./pages/RegisterPage"
 import LoginPage from "./pages/LoginPage"
 import DashboardPage from "./pages/DashboardPage"
 import ProtectedRoute from "./routes/ProtectedRoute"
+import HabitsPage from "./pages/HabitsPage"
 
 function App() {
   return (
@@ -25,6 +26,11 @@ function App() {
       <DashboardPage />
     </ProtectedRoute>
   }
+/>
+
+<Route
+  path="/habits"
+  element={<HabitsPage />}
 />
     </Routes>
   )
