@@ -14,6 +14,8 @@ import {
 
 import type { Journal } from "../types/journal"
 
+import { analyzeJournal } from "../utils/analyzeJournal"
+
 function JournalPage() {
   const [journals,
     setJournals] =
@@ -88,7 +90,8 @@ function JournalPage() {
 
           <p className="text-zinc-400 mt-4 text-lg">
             Capture thoughts,
-            lessons, emotions,
+            lessons,
+            emotions,
             and behavioral patterns.
           </p>
         </div>
@@ -205,35 +208,67 @@ function JournalPage() {
         {/* Feed */}
         <div className="space-y-6">
           {journals.map(
-            (journal) => (
-              <Card
-                key={journal._id}
-              >
-                <div className="flex items-start justify-between gap-6">
-                  <div>
-                    <h2 className="text-3xl font-black text-white">
-                      {journal.title}
-                    </h2>
+            (journal) => {
+              const analysis =
+                analyzeJournal({
+                  mood:
+                    journal.mood,
 
-                    <p className="text-zinc-400 mt-5 leading-relaxed whitespace-pre-wrap">
-                      {journal.content}
-                    </p>
+                  content:
+                    journal.content,
+                })
 
-                    <p className="text-zinc-600 text-sm mt-6">
-                      {new Date(
-                        journal.createdAt
-                      ).toLocaleDateString()}
-                    </p>
+              return (
+                <Card
+                  key={
+                    journal._id
+                  }
+                >
+                  <div className="flex items-start justify-between gap-6">
+                    <div className="flex-1">
+                      <h2 className="text-3xl font-black text-white">
+                        {
+                          journal.title
+                        }
+                      </h2>
+
+                      <p className="text-zinc-400 mt-5 leading-relaxed whitespace-pre-wrap">
+                        {
+                          journal.content
+                        }
+                      </p>
+
+                      {/* AI Analysis */}
+                      <div className="mt-6 rounded-2xl border border-lime-400/20 bg-lime-400/5 p-5">
+                        <p className="text-lime-400 uppercase text-xs tracking-[0.3em]">
+                          AI ANALYSIS
+                        </p>
+
+                        <p className="text-zinc-300 mt-3 leading-relaxed">
+                          {
+                            analysis
+                          }
+                        </p>
+                      </div>
+
+                      <p className="text-zinc-600 text-sm mt-6">
+                        {new Date(
+                          journal.createdAt
+                        ).toLocaleDateString()}
+                      </p>
+                    </div>
+
+                    <div className="min-w-[80px] h-[80px] rounded-3xl bg-lime-400/10 border border-lime-400/20 flex items-center justify-center">
+                      <span className="text-3xl font-black text-lime-400">
+                        {
+                          journal.mood
+                        }
+                      </span>
+                    </div>
                   </div>
-
-                  <div className="min-w-[80px] h-[80px] rounded-3xl bg-lime-400/10 border border-lime-400/20 flex items-center justify-center">
-                    <span className="text-3xl font-black text-lime-400">
-                      {journal.mood}
-                    </span>
-                  </div>
-                </div>
-              </Card>
-            )
+                </Card>
+              )
+            }
           )}
         </div>
       </div>
