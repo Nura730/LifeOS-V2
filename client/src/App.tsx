@@ -1,10 +1,32 @@
+import { Routes, Route } from "react-router-dom"
+
+import RegisterPage from "./pages/RegisterPage"
+import LoginPage from "./pages/LoginPage"
+import DashboardPage from "./pages/DashboardPage"
+import ProtectedRoute from "./routes/ProtectedRoute"
+
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
-      <h1 className="text-4xl font-bold">
-        LifeOS v2
-      </h1>
-    </div>
+    <Routes>
+      <Route
+        path="/register"
+        element={<RegisterPage />}
+      />
+
+      <Route
+        path="/login"
+        element={<LoginPage />}
+      />
+
+      <Route
+  path="/dashboard"
+  element={
+    <ProtectedRoute>
+      <DashboardPage />
+    </ProtectedRoute>
+  }
+/>
+    </Routes>
   )
 }
 

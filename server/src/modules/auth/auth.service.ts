@@ -36,3 +36,38 @@ export const registerUser = async (
     token,
   }
 }
+
+export const loginUser = async (
+  email: string,
+  password: string
+) => {
+  const user = await User.findOne({ email })
+
+  if (!user) {
+    throw new Error("Invalid credentials")
+  }
+
+  const isPasswordMatch = await bcrypt.compare(
+    password,
+    user.password
+  )
+
+  if (!isPasswordMatch) {
+    throw new Error("Invalid credentials")
+  }
+
+  const token = jwt.sign(
+    {
+      id: user._id,
+    },
+    process.env.JWT_SECRET as string,
+    {
+      expiresIn: "7d",
+    }
+  )
+
+  return {
+    user,
+    token,
+  }
+}
